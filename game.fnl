@@ -16,6 +16,9 @@
 (fn love.draw []
   (mode.draw))
 
+(fn love.mousepressed [x y button]
+  (mode.mousepressed x y button set-mode))
+
 (fn love.mousereleased [x y button]
   (mode.mousereleased x y button set-mode))
 

@@ -33,7 +33,7 @@
            (love.graphics.setColor 1 1 1)
            (love.graphics.rectangle "fill" self.x self.y self.width self.height)
            (let [curr-graphic (. self.slots self.value)
-                 scale-target (- (math.max self.width self.height) 10)
+                 scale-target (- (math.min self.width self.height) 10)
                  scale-factor (/ scale-target (math.max (curr-graphic:getWidth) (curr-graphic:getHeight)))
                  scaled-width (* scale-factor (curr-graphic:getWidth))
                  scaled-height (* scale-factor (curr-graphic:getHeight))
