@@ -6,7 +6,7 @@
 (local frame-end-y 520)
 
 
-(fn create-frames [width height]
+(fn create-frames [width height total-symbols]
   (let [frames []
         frame-offset 10
         frame-height (/ (- frame-end-y frame-start-y (* frame-offset height)) height)
@@ -18,7 +18,7 @@
                               (+ frame-start-y (* frame-height (- j 1)) (* frame-offset (- j 1)))
                               frame-width
                               frame-height
-                              10))))
+                              total-symbols))))
     frames))
 
 
@@ -31,7 +31,8 @@
 
          (global frames-wide 3)
          (global frames-tall 1)
-         (global frames (create-frames frames-wide frames-tall))
+         (global max-symbols 8)
+         (global frames (create-frames frames-wide frames-tall max-symbols))
 
          (global buttons [(button-factory
                            80
@@ -50,7 +51,7 @@
                            530
                            60
                            60
-                           "Up Bet"
+                           "Bet\nUp"
                            (lambda []
                              (set bet (+ bet 1))))
                           (button-factory
@@ -58,7 +59,7 @@
                            530
                            60
                            60
-                           "Down Bet"
+                           "Bet\nDown"
                            (lambda []
                              (when (> bet 1)
                                (set bet (- bet 1)))))
@@ -72,7 +73,7 @@
                              (when (< frames-wide 5)
                                (set money (- money 50))
                                (set frames-wide (+ frames-wide 1))
-                               (set frames (create-frames frames-wide frames-tall)))))
+                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
                           (button-factory
                            620
                            140
@@ -83,7 +84,18 @@
                              (when (< frames-tall 5)
                                (set money (- money 100))
                                (set frames-tall (+ frames-tall 2))
-                               (set frames (create-frames frames-wide frames-tall)))))
+                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
+                          (button-factory
+                           620
+                           250
+                           150
+                           100
+                           "Add High Symbol\n($10)"
+                           (lambda []
+                             (when (< frames-tall 5)
+                               (set money (- money 10))
+                               (set max-symbols (+ max-symbols 1))
+                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
                           ]))
 
 

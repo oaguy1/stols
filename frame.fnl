@@ -13,6 +13,8 @@
            (love.graphics.newImage "assets/orange.png")
            (love.graphics.newImage "assets/strawberry.png")
            (love.graphics.newImage "assets/watermelon.png")
+           (love.graphics.newImage "assets/clover.png")
+           (love.graphics.newImage "assets/horseshoe.png")
            (love.graphics.newImage "assets/joker.png")]
    :value (love.math.random 1 top-range)
    :spinning false
