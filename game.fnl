@@ -18,3 +18,6 @@
 
 (fn love.mousereleased [x y button]
   (mode.mousereleased x y button set-mode))
+
+(fn love.keyreleased [key scancode]
+  (mode.keyreleased key scancode set-mode))
