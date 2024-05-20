@@ -17,7 +17,9 @@
            (love.graphics.newImage "assets/horseshoe.png")
            (love.graphics.newImage "assets/joker.png")]
    :value (love.math.random 1 top-range)
+   :font (love.graphics.newFont 16)
    :spinning false
+   :won false
    :dt 0
    :spin (fn spin [self duration]
            (when (not self.spinning)
@@ -32,8 +34,12 @@
                  (set self.spinning false))))
 
    :draw (fn draw [self]
+           (if self.won
+               (love.graphics.setColor 1 .775 0)
+               (love.graphics.setColor 1 1 1))
+           (love.graphics.rectangle "fill" self.x self.y self.width self.height 5 5)
            (love.graphics.setColor 1 1 1)
-           (love.graphics.rectangle "fill" self.x self.y self.width self.height)
+           (love.graphics.setFont self.font)
            (let [curr-graphic (. self.slots self.value)
                  scale-target (- (math.min self.width self.height) 10)
                  scale-factor (/ scale-target (math.max (curr-graphic:getWidth) (curr-graphic:getHeight)))
