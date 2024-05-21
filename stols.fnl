@@ -51,6 +51,14 @@
          (global money-font (love.graphics.newFont 36))
          (global bet-font (love.graphics.newFont 24))
 
+         (global spin-snd (love.audio.newSource "assets/spin.wav" :static))
+         (global win-snd (love.audio.newSource "assets/win.wav" :static))
+         (global upgrade-snd (love.audio.newSource "assets/upgrade.wav" :static))
+         (global bg-music (love.audio.newSource "assets/bg-music.wav" :static))
+         (bg-music:setLooping true)
+         (bg-music:setVolume 0.5)
+         (bg-music:play)
+
          (background:init)
 
          (global money 100)
@@ -75,6 +83,8 @@
                            (lambda [] (> money 0))
                            (lambda []
                              (when (and (not spinning) (>= money bet))
+                               (love.audio.stop spin-snd)
+                               (love.audio.play spin-snd)
                                (set money (- money bet))
                                (set score-calculated false)
                                (each [_ frame (ipairs frames)]
@@ -114,6 +124,8 @@
                            (lambda [] (and (< frames-wide 10) (>= money 50)))
                            (lambda []
                              (when (and (< frames-wide 10) (>= money 50))
+                               (love.audio.stop upgrade-snd)
+                               (love.audio.play upgrade-snd)
                                (set money (- money 50))
                                (set frames-wide (+ frames-wide 1))
                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
@@ -128,6 +140,8 @@
                            (lambda [] (and (< frames-tall 10) (>= money 100)))
                            (lambda []
                              (when (and (< frames-tall 10) (>= money 100))
+                               (love.audio.stop upgrade-snd)
+                               (love.audio.play upgrade-snd)
                                (set money (- money 100))
                                (set frames-tall (+ frames-tall 2))
                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
@@ -142,6 +156,8 @@
                            (lambda [] (and (< max-symbols 12) (>= money 10)))
                            (lambda []
                              (when (and (< max-symbols 12) (>= money 10))
+                               (love.audio.stop upgrade-snd)
+                               (love.audio.play upgrade-snd)
                                (set money (- money 10))
                                (set max-symbols (+ max-symbols 1))
                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
@@ -156,6 +172,8 @@
                            (lambda [] (and (= wild-value -1) (= max-symbols 12) (>= money 500)))
                            (lambda []
                              (when (and (= wild-value -1) (= max-symbols 12) (>= money 500))
+                               (love.audio.stop upgrade-snd)
+                               (love.audio.play upgrade-snd)
                                (set money (- money 500))
                                (set wild-value 12))))])
 
@@ -173,6 +191,8 @@
                                             (when (not (= value frame.value))
                                               (set won false)))
                                           (when won
+                                            (love.audio.stop win-snd)
+                                            (love.audio.play win-snd)
                                             (set winnings (* value 100 bet))))
                                         winnings)
                                       (lambda []
@@ -197,6 +217,8 @@
 
                                           ;; handle winning
                                           (when won
+                                            (love.audio.stop win-snd)
+                                            (love.audio.play win-snd)
                                             (set winnings (+ winnings (* value 10 bet)))
                                             (each [_ idx (ipairs interval)]
                                               (let [frame (. frames idx)]
@@ -264,6 +286,8 @@
                   (set bet (- bet 1)))
 
                 (when (and (= key "space") (not spinning) (>= money bet))
+                  (love.audio.stop spin-snd)
+                  (love.audio.play spin-snd)
                   (set money (- money bet))
                   (set score-calculated false)
                   (each [_ frame (ipairs frames)]
