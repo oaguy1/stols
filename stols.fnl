@@ -1,9 +1,10 @@
 (global frame-factory (require "frame.fnl"))
 (global button-factory (require "button.fnl"))
+(global background (require "background.fnl"))
 (global wild-value -1)
 (local frame-start-x 10)
 (local frame-start-y 10)
-(local frame-end-x 610)
+(local frame-end-x 635)
 (local frame-end-y 520)
 
 
@@ -50,6 +51,8 @@
          (global money-font (love.graphics.newFont 36))
          (global bet-font (love.graphics.newFont 24))
 
+         (background:init)
+
          (global money 100)
          (global bet 1)
          (global spinning false)
@@ -61,11 +64,14 @@
          (global frames (create-frames frames-wide frames-tall max-symbols))
 
          (global buttons [(button-factory
-                           80
+                           115
                            530
                            400
                            60
                            "Spin"
+                           28
+                           :green
+                           (lambda [] (> money 0))
                            (lambda []
                              (when (and (not spinning) (>= money bet))
                                (set money (- money bet))
@@ -74,65 +80,86 @@
                                  (set frame.won false)
                                  (frame:spin 2)))))
                           (button-factory
-                           10
+                           45
                            530
                            60
                            60
                            "Bet\nUp"
+                           18
+                           :green
+                           (lambda [] (> money 0))
                            (lambda []
                              (set bet (+ bet 1))))
                           (button-factory
-                           490
+                           525
                            530
                            60
                            60
                            "Bet\nDown"
+                           18
+                           :green
+                           (lambda [] (> money 0))
                            (lambda []
                              (when (> bet 1)
                                (set bet (- bet 1)))))
                           (button-factory
-                           620
+                           640
                            110
                            150
                            80
                            "Add Column\n($50)"
+                           14
+                           :yellow
+                           (lambda [] (and (< frames-wide 10) (>= money 50)))
                            (lambda []
-                             (when (< frames-wide 5)
+                             (when (and (< frames-wide 10) (>= money 50))
                                (set money (- money 50))
                                (set frames-wide (+ frames-wide 1))
                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
                           (button-factory
-                           620
+                           640
                            200
                            150
                            80
                            "Add 2 Rows\n($100)"
+                           14
+                           :yellow
+                           (lambda [] (and (< frames-tall 10) (>= money 100)))
                            (lambda []
-                             (when (< frames-tall 5)
+                             (when (and (< frames-tall 10) (>= money 100))
                                (set money (- money 100))
                                (set frames-tall (+ frames-tall 2))
                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
                           (button-factory
-                           620
+                           640
                            290
                            150
                            80
                            "Add High Symbol\n($10)"
+                           14
+                           :yellow
+                           (lambda [] (and (< max-symbols 12) (>= money 10)))
                            (lambda []
-                             (when (< max-symbols 12)
+                             (when (and (< max-symbols 12) (>= money 10))
                                (set money (- money 10))
                                (set max-symbols (+ max-symbols 1))
                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
                           (button-factory
-                           620
+                           640
                            380
                            150
                            80
                            "Joker is Wild\n($500)"
+                           14
+                           :yellow
+                           (lambda [] (and (= wild-value -1) (= max-symbols 12) (>= money 500)))
                            (lambda []
-                             (when (= wild-value -1)
+                             (when (and (= wild-value -1) (= max-symbols 12) (>= money 500))
                                (set money (- money 500))
                                (set wild-value 12))))])
+
+         (each [_ button (ipairs buttons)]
+           (button:init))
 
          (global user-won-strategies [(lambda []
                                         ;; all match, highest payout
@@ -176,9 +203,9 @@
                                         winnings)
                                       ]))
 
+ :update (fn update [dt mode-set]
+           (background:update dt)
 
-
- :update (fn update [dt]
            (each [_ frame (ipairs frames)]
              (frame:update dt))
 
@@ -192,41 +219,36 @@
            (when (and (not spinning) (not score-calculated))
              (each [_ strategy (ipairs user-won-strategies)]
                (set money (+ money (strategy))))
-             (set score-calculated true)))
+             (set score-calculated true))
 
+           (when (= money 0)
+             (mode-set "game-over.fnl" mode-set)))
 
  :draw (fn draw []
-         ;; tiled background
-         (love.graphics.setColor 1 1 1)
-         (for [i 0 (/ (love.graphics.getWidth) (background-img:getWidth))]
-           (for [j 0 (/ (love.graphics.getHeight) (background-img:getHeight))]
-             (love.graphics.draw background-img (* i (background-img:getWidth)) (* j (background-img:getHeight)))))
+         (background:draw)
 
          (love.graphics.setColor 1 1 1)
-         (love.graphics.draw logo-img 620 10 0 .10 .10)
+         (love.graphics.draw logo-img 640 10 0 .10 .10)
          (love.graphics.setFont money-font)
-         (love.graphics.print (.. "$" (tostring money)) 620 520)
+         (love.graphics.print (.. "$" (tostring money)) 640 520)
          (love.graphics.setFont bet-font)
-         (love.graphics.print (.. "Bet: $" (tostring bet)) 620 560)
+         (love.graphics.print (.. "Bet: $" (tostring bet)) 640 560)
          (each [_ frame (ipairs frames)]
            (frame:draw))
 
          (each [_ button (ipairs buttons)]
            (button:draw)))
-
  
  :mousepressed (fn mousereleased [x y button modeset]
                  (each [_ button (ipairs buttons)]
                    (when (button:inside-button? x y)
                      (set button.pressed true))))
 
-
  :mousereleased (fn mousereleased [x y button modeset]
                   (each [_ button (ipairs buttons)]
                     (set button.pressed false)
                     (when (button:inside-button? x y)
                       (button.action))))
-
 
  :keyreleased (fn keyreleased [key scancode modeset]
                 (when (= key "up")
