@@ -57,6 +57,7 @@
          (global bet 1)
          (global spinning false)
          (global score-calculated false)
+         (global game-over-timer 2)
 
          (global frames-wide 3)
          (global frames-tall 1)
@@ -221,8 +222,13 @@
                (set money (+ money (strategy))))
              (set score-calculated true))
 
-           (when (= money 0)
-             (mode-set "game-over.fnl" mode-set)))
+           (when (and (= money 0)
+                      (< game-over-timer 0))
+             (mode-set "game-over.fnl" mode-set))
+
+           (when (and (= money 0)
+                      (> game-over-timer 0))
+             (set game-over-timer (- game-over-timer dt))))
 
  :draw (fn draw []
          (background:draw)
