@@ -52,6 +52,8 @@
          (global bet-font (love.graphics.newFont 24))
 
          (global spin-snd (love.audio.newSource "assets/spin.wav" :static))
+         (global bet-up-snd (love.audio.newSource "assets/bet-up.wav" :static))
+         (global bet-down-snd (love.audio.newSource "assets/bet-down.wav" :static))
          (global win-snd (love.audio.newSource "assets/win.wav" :static))
          (global upgrade-snd (love.audio.newSource "assets/upgrade.wav" :static))
          (global game-over-snd (love.audio.newSource "assets/game-over.wav" :static))
@@ -101,6 +103,8 @@
                            :green
                            (lambda [] (> money 0))
                            (lambda []
+                             (love.audio.stop bet-up-snd)
+                             (love.audio.play bet-up-snd)
                              (set bet (+ bet 1))))
                           (button-factory
                            525
@@ -113,6 +117,8 @@
                            (lambda [] (> money 0))
                            (lambda []
                              (when (> bet 1)
+                               (love.audio.stop bet-down-snd)
+                               (love.audio.play bet-down-snd)
                                (set bet (- bet 1)))))
                           (button-factory
                            640
@@ -284,9 +290,13 @@
 
  :keyreleased (fn keyreleased [key scancode modeset]
                 (when (= key "up")
+                  (love.audio.stop bet-up-snd)
+                  (love.audio.play bet-up-snd)
                   (set bet (+ bet 1)))
 
                 (when (and (= key "down") (> bet 1))
+                  (love.audio.stop bet-down-snd)
+                  (love.audio.play bet-down-snd)
                   (set bet (- bet 1)))
 
                 (when (and (= key "space") (not spinning) (>= money bet))
