@@ -54,7 +54,8 @@
          (global spin-snd (love.audio.newSource "assets/spin.wav" :static))
          (global win-snd (love.audio.newSource "assets/win.wav" :static))
          (global upgrade-snd (love.audio.newSource "assets/upgrade.wav" :static))
-         (global bg-music (love.audio.newSource "assets/bg-music.wav" :static))
+         (global game-over-snd (love.audio.newSource "assets/game-over.wav" :static))
+         (global bg-music (love.audio.newSource "assets/bg-music.ogg" :static))
          (bg-music:setLooping true)
          (bg-music:setVolume 0.5)
          (bg-music:play)
@@ -246,6 +247,9 @@
 
            (when (and (= money 0)
                       (< game-over-timer 0))
+             (bg-music:stop)
+             (love.audio.stop game-over-snd)
+             (love.audio.play game-over-snd)
              (mode-set "game-over.fnl" mode-set))
 
            (when (and (= money 0)
