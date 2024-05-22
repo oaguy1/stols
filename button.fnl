@@ -24,11 +24,16 @@
                           (<= self.y y)
                           (<= x (+ self.x self.width))
                           (<= y (+ self.y self.height))))
+
+   :set-text (fn set-text [self new-text]
+               ;; set font and centering
+               (local font (love.graphics.newFont self.text-size))
+               (self.textbox:setf new-text self.width "center")
+               (self.textbox:setFont font))
+
    :init (fn init [self]
-           ;; set font and centering
-           (local font (love.graphics.newFont self.text-size))
-           (self.textbox:setf text width "center")
-           (self.textbox:setFont font))
+           (self:set-text self.text))
+
    :draw (fn draw [self]
 
            ;; actual button drawing

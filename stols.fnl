@@ -1,5 +1,6 @@
 (global frame-factory (require "frame.fnl"))
 (global button-factory (require "button.fnl"))
+(global upgrade-factory (require "upgrade.fnl"))
 (global background (require "background.fnl"))
 (global wild-value -1)
 (local frame-start-x 10)
@@ -72,8 +73,24 @@
 
          (global frames-wide 3)
          (global frames-tall 1)
-         (global max-symbols 8)
+         (global max-symbols 5)
          (global frames (create-frames frames-wide frames-tall max-symbols))
+
+         (local column-upgrade (upgrade-factory 50
+                                                 7
+                                                 (lambda []
+                                                   (set frames-wide (+ frames-wide 1))
+                                                   (set frames (create-frames frames-wide frames-tall max-symbols)))))
+         (local row-upgrade (upgrade-factory 100
+                                             6
+                                             (lambda []
+                                               (set frames-tall (+ frames-tall 2))
+                                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
+         (local symbol-upgrade (upgrade-factory 10
+                                                7
+                                                (lambda []
+                                                  (set max-symbols (+ max-symbols 1))
+                                                  (set frames (create-frames frames-wide frames-tall max-symbols)))))
 
          (global buttons [(button-factory
                            115
@@ -84,7 +101,7 @@
                            28
                            :green
                            (lambda [] (> money 0))
-                           (lambda []
+                           (lambda [self]
                              (when (and (not spinning) (>= money bet))
                                (love.audio.stop spin-snd)
                                (love.audio.play spin-snd)
@@ -102,7 +119,7 @@
                            18
                            :green
                            (lambda [] (> money 0))
-                           (lambda []
+                           (lambda [self]
                              (love.audio.stop bet-up-snd)
                              (love.audio.play bet-up-snd)
                              (set bet (+ bet 1))))
@@ -115,7 +132,7 @@
                            18
                            :green
                            (lambda [] (> money 0))
-                           (lambda []
+                           (lambda [self]
                              (when (> bet 1)
                                (love.audio.stop bet-down-snd)
                                (love.audio.play bet-down-snd)
@@ -128,14 +145,16 @@
                            "Add Column\n($50)"
                            14
                            :yellow
-                           (lambda [] (and (< frames-wide 10) (>= money 50)))
-                           (lambda []
-                             (when (and (< frames-wide 10) (>= money 50))
+                           (lambda [] (and (< column-upgrade.level column-upgrade.total-activations)
+                                        (>= money (column-upgrade:get-price))))
+                           (lambda [self]
+                             (when (and (< column-upgrade.level column-upgrade.total-activations)
+                                        (>= money (column-upgrade:get-price)))
                                (love.audio.stop upgrade-snd)
                                (love.audio.play upgrade-snd)
-                               (set money (- money 50))
-                               (set frames-wide (+ frames-wide 1))
-                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
+                               (set money (- money (column-upgrade:get-price)))
+                               (column-upgrade:do-upgrade)
+                               (self:set-text (.. "Add Column\n($" (tostring (column-upgrade:get-price)) ")")))))
                           (button-factory
                            640
                            200
@@ -144,14 +163,16 @@
                            "Add 2 Rows\n($100)"
                            14
                            :yellow
-                           (lambda [] (and (< frames-tall 10) (>= money 100)))
-                           (lambda []
-                             (when (and (< frames-tall 10) (>= money 100))
+                           (lambda [] (and (< row-upgrade.level row-upgrade.total-activations)
+                                        (>= money (row-upgrade:get-price))))
+                           (lambda [self]
+                             (when (and (< row-upgrade.level row-upgrade.total-activations)
+                                        (>= money (row-upgrade:get-price)))
                                (love.audio.stop upgrade-snd)
                                (love.audio.play upgrade-snd)
-                               (set money (- money 100))
-                               (set frames-tall (+ frames-tall 2))
-                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
+                               (set money (- money (row-upgrade:get-price)))
+                               (row-upgrade:do-upgrade)
+                               (self:set-text (.. "Add 2 Rows\n($" (tostring (row-upgrade:get-price)) ")")))))
                           (button-factory
                            640
                            290
@@ -160,14 +181,16 @@
                            "Add High Symbol\n($10)"
                            14
                            :yellow
-                           (lambda [] (and (< max-symbols 12) (>= money 10)))
-                           (lambda []
-                             (when (and (< max-symbols 12) (>= money 10))
+                           (lambda [] (and (< symbol-upgrade.level symbol-upgrade.total-activations)
+                                        (>= money (symbol-upgrade:get-price))))
+                           (lambda [self]
+                             (when (and (< symbol-upgrade.level symbol-upgrade.total-activations)
+                                        (>= money (symbol-upgrade:get-price)))
                                (love.audio.stop upgrade-snd)
                                (love.audio.play upgrade-snd)
-                               (set money (- money 10))
-                               (set max-symbols (+ max-symbols 1))
-                               (set frames (create-frames frames-wide frames-tall max-symbols)))))
+                               (set money (- money (symbol-upgrade:get-price)))
+                               (symbol-upgrade:do-upgrade)
+                               (self:set-text (.. "Add High Symbol\n($" (tostring (symbol-upgrade:get-price)) ")")))))
                           (button-factory
                            640
                            380
@@ -177,7 +200,7 @@
                            14
                            :yellow
                            (lambda [] (and (= wild-value -1) (= max-symbols 12) (>= money 500)))
-                           (lambda []
+                           (lambda [self]
                              (when (and (= wild-value -1) (= max-symbols 12) (>= money 500))
                                (love.audio.stop upgrade-snd)
                                (love.audio.play upgrade-snd)
@@ -286,7 +309,7 @@
                   (each [_ button (ipairs buttons)]
                     (set button.pressed false)
                     (when (button:inside-button? x y)
-                      (button.action))))
+                      (button:action))))
 
  :keyreleased (fn keyreleased [key scancode modeset]
                 (when (= key "up")
