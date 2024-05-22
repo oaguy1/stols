@@ -22,17 +22,18 @@
                            (lambda [] true)
                            (lambda []
                              (mode-set "stols.fnl")))
-                          (button-factory
-                           300
-                           390
-                           200
-                           60
-                           "Quit to Menu"
-                           18
-                           :green
-                           (lambda [] true)
-                           (lambda []
-                             (mode-set "menu.fnl")))])
+                          ;; (button-factory
+                          ;; 300
+                          ;; 390
+                          ;; 200
+                          ;; 60
+                          ;; "Quit to Menu"
+                          ;; 18
+                          ;; :green
+                          ;; (lambda [] true)
+                          ;; (lambda []
+                          ;;   (mode-set "menu.fnl")))])
+                          ])
 
          (each [_ button (ipairs buttons)]
            (button:init)))
