@@ -58,6 +58,7 @@
          (global win-snd (love.audio.newSource "assets/win.wav" :static))
          (global upgrade-snd (love.audio.newSource "assets/upgrade.wav" :static))
          (global game-over-snd (love.audio.newSource "assets/game-over.wav" :static))
+         (global millionaire-snd (love.audio.newSource "assets/millionaire.wav" :static))
          (global bg-music (love.audio.newSource "assets/bg-music.ogg" :static))
          (bg-music:setLooping true)
          (bg-music:setVolume 0.5)
@@ -69,7 +70,7 @@
          (global bet 1)
          (global spinning false)
          (global score-calculated false)
-         (global game-over-timer 2)
+         (global scene-change-timer 4)
 
          (global frames-wide 3)
          (global frames-tall 1)
@@ -77,20 +78,19 @@
          (global frames (create-frames frames-wide frames-tall max-symbols))
 
          (local column-upgrade (upgrade-factory 50
-                                                 7
+                                                 6
                                                  (lambda []
+                                                   (when (< max-symbols 12)
+                                                     (set max-symbols (+ max-symbols 1)))
                                                    (set frames-wide (+ frames-wide 1))
                                                    (set frames (create-frames frames-wide frames-tall max-symbols)))))
          (local row-upgrade (upgrade-factory 100
-                                             6
+                                             5
                                              (lambda []
+                                               (when (< max-symbols 12)
+                                                 (set max-symbols (+ max-symbols 1)))
                                                (set frames-tall (+ frames-tall 2))
                                                (set frames (create-frames frames-wide frames-tall max-symbols)))))
-         (local symbol-upgrade (upgrade-factory 10
-                                                7
-                                                (lambda []
-                                                  (set max-symbols (+ max-symbols 1))
-                                                  (set frames (create-frames frames-wide frames-tall max-symbols)))))
 
          (global buttons [(button-factory
                            115
@@ -139,7 +139,7 @@
                                (set bet (- bet 1)))))
                           (button-factory
                            640
-                           110
+                           170
                            150
                            80
                            "Add Column\n($50)"
@@ -154,10 +154,12 @@
                                (love.audio.play upgrade-snd)
                                (set money (- money (column-upgrade:get-price)))
                                (column-upgrade:do-upgrade)
-                               (self:set-text (.. "Add Column\n($" (tostring (column-upgrade:get-price)) ")")))))
+                               (if (= column-upgrade.level column-upgrade.total-activations)
+                                   (self:set-text "Maxed Out")
+                                   (self:set-text (.. "Add Column\n($" (tostring (column-upgrade:get-price)) ")"))))))
                           (button-factory
                            640
-                           200
+                           260
                            150
                            80
                            "Add 2 Rows\n($100)"
@@ -172,40 +174,25 @@
                                (love.audio.play upgrade-snd)
                                (set money (- money (row-upgrade:get-price)))
                                (row-upgrade:do-upgrade)
-                               (self:set-text (.. "Add 2 Rows\n($" (tostring (row-upgrade:get-price)) ")")))))
+                               (if (= row-upgrade.level row-upgrade.total-activations)
+                                   (self:set-text "Maxed Out")
+                                   (self:set-text (.. "Add 2 Rows\n($" (tostring (row-upgrade:get-price)) ")"))))))
                           (button-factory
                            640
-                           290
+                           350
                            150
                            80
-                           "Add High Symbol\n($10)"
+                           "Joker is Wild\n($100000)"
                            14
                            :yellow
-                           (lambda [] (and (< symbol-upgrade.level symbol-upgrade.total-activations)
-                                        (>= money (symbol-upgrade:get-price))))
+                           (lambda [] (and (= wild-value -1) (= max-symbols 12) (>= money 100000)))
                            (lambda [self]
-                             (when (and (< symbol-upgrade.level symbol-upgrade.total-activations)
-                                        (>= money (symbol-upgrade:get-price)))
+                             (when (and (= wild-value -1) (= max-symbols 12) (>= money 100000))
                                (love.audio.stop upgrade-snd)
                                (love.audio.play upgrade-snd)
-                               (set money (- money (symbol-upgrade:get-price)))
-                               (symbol-upgrade:do-upgrade)
-                               (self:set-text (.. "Add High Symbol\n($" (tostring (symbol-upgrade:get-price)) ")")))))
-                          (button-factory
-                           640
-                           380
-                           150
-                           80
-                           "Joker is Wild\n($500)"
-                           14
-                           :yellow
-                           (lambda [] (and (= wild-value -1) (= max-symbols 12) (>= money 500)))
-                           (lambda [self]
-                             (when (and (= wild-value -1) (= max-symbols 12) (>= money 500))
-                               (love.audio.stop upgrade-snd)
-                               (love.audio.play upgrade-snd)
-                               (set money (- money 500))
-                               (set wild-value 12))))])
+                               (set money (- money 100000))
+                               (set wild-value 12)
+                               (self:set-text "Maxed Out"))))])
 
          (each [_ button (ipairs buttons)]
            (button:init))
@@ -275,21 +262,32 @@
              (set score-calculated true))
 
            (when (and (= money 0)
-                      (< game-over-timer 0))
+                      (< scene-change-timer 0))
              (bg-music:stop)
              (love.audio.stop game-over-snd)
              (love.audio.play game-over-snd)
              (mode-set "game-over.fnl" mode-set))
 
            (when (and (= money 0)
-                      (> game-over-timer 0))
-             (set game-over-timer (- game-over-timer dt))))
+                      (> scene-change-timer 0))
+             (set scene-change-timer (- scene-change-timer dt)))
+
+           (when (and (> money 1000000)
+                      (< scene-change-timer 0))
+             (bg-music:stop)
+             (love.audio.stop millionaire-snd)
+             (love.audio.play millionaire-snd)
+             (mode-set "millionaire.fnl" mode-set))
+
+           (when (and (> money 1000000)
+                      (> scene-change-timer 0))
+             (set scene-change-timer (- scene-change-timer dt))))
 
  :draw (fn draw []
          (background:draw)
 
          (love.graphics.setColor 1 1 1)
-         (love.graphics.draw logo-img 640 10 0 .10 .10)
+         (love.graphics.draw logo-img 640 50 0 .10 .10)
          (love.graphics.setFont money-font)
          (love.graphics.print (.. "$" (tostring money)) 640 520)
          (love.graphics.setFont bet-font)

@@ -6,5 +6,5 @@ love.conf = function(t)
    t.window.width = 800
    t.window.height = 600
    t.window.vsync = false
-   t.version = "11.4"
+   t.version = "11.3"
 end

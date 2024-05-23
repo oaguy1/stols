@@ -1,5 +1,7 @@
 *~
 *.love
 .DS_Store
-web
-web.zip
+makelove-build
+node_modules
+package-lock.json
+package.json

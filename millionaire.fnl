@@ -52,7 +52,7 @@
          (love.graphics.setColor 1 1 1)
          (love.graphics.draw logo-img 250 70 0 .20 .20)
          (love.graphics.setFont money-font)
-         (love.graphics.printf "GAME OVER" 0 250 800 "center")
+         (love.graphics.printf "You're a Millionaire!" 0 250 800 "center")
 
          (each [_ button (ipairs buttons)]
            (button:draw)))

@@ -1,0 +1,29 @@
+name = "Stols"
+default_targets = ["win64", "macos", "lovejs"]
+build_directory = "makelove-build"
+
+love_files = [
+    "::git-ls-tree::",
+    "-*/.*",
+    "-dist",
+]
+
+icon_file = "icon.png"
+
+[windows]
+[windows.exe_metadata]
+FileDescription = "{name} {version}"
+FileVersion = "{version}"
+CompanyName = "oaguy1"
+LegalCopyright = "Copyright © 2024 Lily Hughes-Robinson"
+ProductName = "{name}"
+ProductVersion = "{version}"
+OriginalFilename = "stols.exe"
+
+[macos]
+[macos.app_metadata]
+CFBundleName = "{name}"
+CFBundleIdentifier = "io.itch.oaguy1.Stols"
+NSHumanReadableCopyright = "Copyright © 2024 Lily Hughes-Robinson"
+CFBundleShortVersionString = "{version}"
+
